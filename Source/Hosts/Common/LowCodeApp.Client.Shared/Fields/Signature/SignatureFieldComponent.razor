@@ -1,0 +1,159 @@
+@using Codeer.LowCode.Blazor.Components
+@using Codeer.LowCode.Blazor.Components.Primitives
+@using Codeer.LowCode.Blazor.Repository.Data
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using System.Globalization
+@using LowCodeApp.Client.Shared.Properties
+@inherits FieldComponentBase<SignatureField>
+@inject IJSRuntime JSRuntime
+
+<div class="field-content @(Field.GetValidationClassName())">
+  @if (CanEdit)
+  {
+    <div class="signature-pad">
+      <canvas @ref="Element" id="@WebElementId" class="signature-canvas" style="height:@(HeightPx)"></canvas>
+      <button type="button" class="btn btn-outline-secondary btn-sm signature-clear-btn" disabled="@(!HasImage)" @onclick="ClearAsync">@Resources.SignatureFieldClear</button>
+    </div>
+  }
+  else if (HasImage)
+  {
+    <img src="@_imageDataUrl" alt="signature" class="signature-image" style="max-height:@(HeightPx)" />
+  }
+</div>
+<ValidationFeedback IsValid="@Field.IsValid" ErrorMessage="@Field.ErrorText" />
+
+@code {
+  private IJSObjectReference? _module;
+  private DotNetObjectReference<SignatureFieldComponent>? _dotNetRef;
+  private string? _imageDataUrl;
+  private bool _jsFailed;
+  private string? _loadedKey;   //_imageDataUrl がどの値から作られたか
+  private string? _drawnDataUrl; //canvas に最後に反映した画像
+
+  private SignatureFieldDesign Design => Field.Design;
+  private bool CanEdit => Field.IsEnabled && !Field.IsViewOnly;
+  private bool HasImage => !string.IsNullOrEmpty(Field.FileName);
+  private string HeightPx => Design.CanvasHeight.ToString(CultureInfo.InvariantCulture) + "px";
+
+  //ファイル名は常に signature.png なので、レコードの切り替えを見分けるために GUID とサイズも使う
+  private string? CurrentKey => Field.GetData() is FileFieldData d && !string.IsNullOrEmpty(d.FileName)
+    ? $"{d.FileGuid}|{d.FileSize}|{d.FileName}" : null;
+
+  protected override async Task OnParametersSetAsync()
+  {
+    await base.OnParametersSetAsync();
+    await LoadImageDataUrlAsync();
+  }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    await base.OnAfterRenderAsync(firstRender);
+    if (!CanEdit || _jsFailed) return;
+    if (_module == null) await InitJsAsync();
+    await SyncCanvasAsync();
+  }
+
+  private async Task InitJsAsync()
+  {
+
+    //Designer プレビュー等、静的アセットの提供状況が不明な環境でも
+    //コンポーネント自体は落とさない (canvas は表示されるが描画は無効になる)。
+    try
+    {
+      _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LowCodeApp.Client.Shared/signature.js");
+      _dotNetRef = DotNetObjectReference.Create(this);
+      await _module.InvokeVoidAsync("init", Element, _dotNetRef, new { penColor = Design.PenColor, penWidth = Design.PenWidth });
+    }
+    catch
+    {
+      _jsFailed = true;
+      _module = null;
+    }
+  }
+
+  //データが後から届いた・別レコードに切り替わった場合に canvas を値に合わせる
+  private async Task SyncCanvasAsync()
+  {
+    if (_module == null || _drawnDataUrl == _imageDataUrl) return;
+    try
+    {
+      if (_imageDataUrl == null) await _module.InvokeVoidAsync("clear", Element);
+      else await _module.InvokeVoidAsync("setImage", Element, _imageDataUrl);
+      _drawnDataUrl = _imageDataUrl;
+    }
+    catch { /* ignore */ }
+  }
+
+  private async Task LoadImageDataUrlAsync()
+  {
+    var key = CurrentKey;
+    if (key == null)
+    {
+      _imageDataUrl = null;
+      _loadedKey = null;
+      return;
+    }
+
+    //既に同じ値を読み込み済みなら再取得しない (ストローク確定直後の自前反映と二重取得しないため)
+    if (_loadedKey == key && _imageDataUrl != null) return;
+
+    try
+    {
+      using var stream = await Field.GetMemoryStreamAsync();
+      if (stream == null)
+      {
+        _imageDataUrl = null;
+        return;
+      }
+      _imageDataUrl = "data:image/png;base64," + Convert.ToBase64String(stream.ToArray());
+      _loadedKey = key;
+    }
+    catch
+    {
+      _imageDataUrl = null;
+    }
+  }
+
+  [JSInvokable]
+  public async Task OnStrokeCompleted(string base64Png)
+  {
+    try
+    {
+      var bytes = Convert.FromBase64String(base64Png);
+      await Field.SetSignatureImageAsync(bytes);
+      _imageDataUrl = "data:image/png;base64," + base64Png;
+      _drawnDataUrl = _imageDataUrl; //canvas には既に描かれている
+      _loadedKey = CurrentKey;
+      StateHasChanged();
+    }
+    catch
+    {
+      //保存失敗時のエラー表示は Field 側 (ErrorText) に任せる
+    }
+  }
+
+  private async Task ClearAsync()
+  {
+    await Field.ClearFileAsync();
+    _imageDataUrl = null;
+    _loadedKey = null;
+    _drawnDataUrl = null;
+    if (_module != null)
+    {
+      try { await _module.InvokeVoidAsync("clear", Element); } catch { /* ignore */ }
+    }
+  }
+
+  public override async ValueTask DisposeAsync()
+  {
+    if (_module != null)
+    {
+      try { await _module.InvokeVoidAsync("dispose", Element); } catch { /* ignore */ }
+      try { await _module.DisposeAsync(); } catch { /* ignore */ }
+    }
+    _dotNetRef?.Dispose();
+
+    await base.DisposeAsync();
+  }
+}
