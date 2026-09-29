@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using Codeer.LowCode.Blazor.OperatingModel;
 using Codeer.LowCode.Blazor.Script;
 
@@ -15,7 +16,11 @@ namespace LowCodeApp.Client.Shared.Fields.Signature
         [ScriptHide]
         public async Task SetSignatureImageAsync(byte[] pngBytes)
         {
-            await SetFileAsync("signature.png", new StreamContent(new MemoryStream(pngBytes)));
+            //Content-Type を付けないと MAUI (Android) の HttpClient がフォームとして送り、
+            //サーバーが本文をフォームとして解析して 500 になる
+            var content = new StreamContent(new MemoryStream(pngBytes));
+            content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            await SetFileAsync("signature.png", content);
         }
     }
 }

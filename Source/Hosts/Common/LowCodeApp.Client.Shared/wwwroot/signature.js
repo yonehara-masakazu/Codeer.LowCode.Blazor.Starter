@@ -88,8 +88,11 @@ function onPointerDown(canvas, e) {
     const s = stateMap.get(canvas);
     if (!s) return;
     e.preventDefault();
+    // 2 本目以降の指 (や手のひら) は無視する。追わないと直前の点との間を直線で結んでしまう
+    if (s.drawing) return;
     clearCommitTimer(s);
     s.drawing = true;
+    s.pointerId = e.pointerId;
     try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     const p = getPoint(canvas, e);
     s.lastX = p.x;
@@ -107,6 +110,7 @@ function onPointerMove(canvas, e) {
     const s = stateMap.get(canvas);
     if (!s || !s.drawing) return;
     e.preventDefault();
+    if (e.pointerId !== s.pointerId) return;
     const p = getPoint(canvas, e);
     const ctx = canvas.getContext('2d');
     ctx.beginPath();
@@ -122,7 +126,9 @@ function onPointerUp(canvas, e) {
     if (!s) return;
     if (!s.drawing) return;
     e.preventDefault();
+    if (e.pointerId !== s.pointerId) return;
     s.drawing = false;
+    s.pointerId = null;
     try { canvas.releasePointerCapture(e.pointerId); } catch { /* ignore */ }
     scheduleCommit(canvas);
 }
