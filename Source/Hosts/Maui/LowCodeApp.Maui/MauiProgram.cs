@@ -26,6 +26,7 @@ namespace LowCodeApp.Maui
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSharedServices();
+            builder.Services.AddSingleton<IHapticDevice, MauiHapticDevice>();
             builder.Services.AddScoped<INavigationService, NavigationService>();
 
             //All HTTP traffic goes to the server URL from ServerSettings (appsettings.json default, overridable

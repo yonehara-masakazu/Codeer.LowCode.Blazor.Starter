@@ -9,8 +9,14 @@ namespace LowCodeApp.Maui
             InitializeComponent();
             ServerUrlEntry.Text = ServerSettings.BaseUrl;
             DefaultLabel.Text = $"Default (appsettings.json): {ServerSettings.DefaultBaseUrl}";
+            HapticsSwitch.IsToggled = Preferences.Default.Get(HapticsKey, true);
             RefreshLog();
         }
+
+        //Haptics サービスは毎回 Preferences を読むので、切り替えは即時に効く
+        const string HapticsKey = "Haptics.IsEnabled";
+
+        void OnHapticsToggled(object? sender, ToggledEventArgs e) => Preferences.Default.Set(HapticsKey, e.Value);
 
         void OnSaveClicked(object? sender, EventArgs e)
         {

@@ -5,6 +5,7 @@ using Codeer.LowCode.Blazor.Designer;
 using Codeer.LowCode.Blazor.Designer.Standard;
 using Codeer.LowCode.Blazor.Extras.Designer;
 using Codeer.LowCode.Blazor.Script;
+using LowCodeApp.Client.Shared.Services;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using System.ClientModel;
@@ -44,6 +45,7 @@ public partial class App : DesignerApp
 
         Services.AddSingleton<IDbAccessorFactory, DbAccessorFactory>();
         ScriptRuntimeTypeManager.AddService(new LoadingService());
+        ScriptRuntimeTypeManager.AddService(new Haptics(new NullHapticDevice()));
         ScriptRuntimeTypeManager.AddType<LoadingService.LoadingScope>();
 
         BlazorRuntime.InstallBundleCss("LowCodeApp.Client.Shared");

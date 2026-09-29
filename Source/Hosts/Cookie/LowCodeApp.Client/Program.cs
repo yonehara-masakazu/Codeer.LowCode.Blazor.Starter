@@ -10,6 +10,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSharedServices();
+builder.Services.AddScoped<IHapticDevice, WebHapticDevice>();
 builder.Services.AddScoped<INavigationService, NavigationService>();
 
 builder.Services.AddScoped(sp => {

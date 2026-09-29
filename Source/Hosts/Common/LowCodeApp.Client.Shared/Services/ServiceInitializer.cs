@@ -7,6 +7,7 @@ using Codeer.LowCode.Blazor.Extras.Mail;
 using Codeer.LowCode.Blazor.Extras.ScriptObjects;
 using Codeer.LowCode.Blazor.Extras.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Globalization;
 
 namespace LowCodeApp.Client.Shared.Services
@@ -39,6 +40,7 @@ namespace LowCodeApp.Client.Shared.Services
             services.AddScoped<Codeer.LowCode.Blazor.RequestInterfaces.Services>();
             services.AddScoped<ILogger, Logger>();
             services.AddSingleton<LoadingService>();
+            services.TryAddScoped<IHapticDevice, NullHapticDevice>();
             services.AddToaster(config =>
             {
                 config.PositionClass = Defaults.Classes.Position.BottomRight;

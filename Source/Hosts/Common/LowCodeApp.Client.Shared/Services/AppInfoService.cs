@@ -46,13 +46,14 @@ namespace LowCodeApp.Client.Shared.Services
         public string Localize(string text)
             => _localizeService?.Localize(text) ?? text;
 
-        public AppInfoService(IHttpService http, HttpClient httpClient, LoadingService loadingService, NavigationManager navigationManager, ILogger logger, IToastService toaster)
+        public AppInfoService(IHttpService http, HttpClient httpClient, LoadingService loadingService, NavigationManager navigationManager, ILogger logger, IToastService toaster, IHapticDevice hapticDevice)
         {
             _http = http;
             _httpClient = httpClient;
             _navigationManager = navigationManager;
             _loadingService = loadingService;
             _scriptRuntimeTypeManager.AddService(loadingService);
+            _scriptRuntimeTypeManager.AddService(new Haptics(hapticDevice));
             _scriptRuntimeTypeManager.AddType<LoadingService.LoadingScope>();
             ApexChartsClientInitializer.Initialize(this);
             ExtrasClientInitializer.Initialize(this, http, logger, toaster);
