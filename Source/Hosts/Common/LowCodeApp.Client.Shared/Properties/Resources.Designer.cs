@@ -229,5 +229,113 @@ namespace LowCodeApp.Client.Shared.Properties {
                 return ResourceManager.GetString("ScanDuplicateMode_Ignore", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   CameraField に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraField {
+            get {
+                return ResourceManager.GetString("CameraField", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldLatitudeField に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldLatitudeField {
+            get {
+                return ResourceManager.GetString("CameraFieldLatitudeField", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldLongitudeField に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldLongitudeField {
+            get {
+                return ResourceManager.GetString("CameraFieldLongitudeField", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldTakenAtField に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldTakenAtField {
+            get {
+                return ResourceManager.GetString("CameraFieldTakenAtField", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldMaxImageSize に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldMaxImageSize {
+            get {
+                return ResourceManager.GetString("CameraFieldMaxImageSize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldJpegQuality に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldJpegQuality {
+            get {
+                return ResourceManager.GetString("CameraFieldJpegQuality", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldAllowPickFromLibrary に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldAllowPickFromLibrary {
+            get {
+                return ResourceManager.GetString("CameraFieldAllowPickFromLibrary", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldTake に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldTake {
+            get {
+                return ResourceManager.GetString("CameraFieldTake", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldPick に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldPick {
+            get {
+                return ResourceManager.GetString("CameraFieldPick", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldClear に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldClear {
+            get {
+                return ResourceManager.GetString("CameraFieldClear", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldProcessing に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldProcessing {
+            get {
+                return ResourceManager.GetString("CameraFieldProcessing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   CameraFieldError に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string CameraFieldError {
+            get {
+                return ResourceManager.GetString("CameraFieldError", resourceCulture);
+            }
+        }
     }
 }

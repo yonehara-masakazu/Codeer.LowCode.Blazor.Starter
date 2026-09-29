@@ -98,4 +98,40 @@
   <data name="ScanDuplicateMode_Ignore" xml:space="preserve">
     <value>Ignore</value>
   </data>
+  <data name="CameraField" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="CameraFieldLatitudeField" xml:space="preserve">
+    <value>Latitude Field</value>
+  </data>
+  <data name="CameraFieldLongitudeField" xml:space="preserve">
+    <value>Longitude Field</value>
+  </data>
+  <data name="CameraFieldTakenAtField" xml:space="preserve">
+    <value>Taken At Field</value>
+  </data>
+  <data name="CameraFieldMaxImageSize" xml:space="preserve">
+    <value>Max Image Size (px)</value>
+  </data>
+  <data name="CameraFieldJpegQuality" xml:space="preserve">
+    <value>JPEG Quality (1-100)</value>
+  </data>
+  <data name="CameraFieldAllowPickFromLibrary" xml:space="preserve">
+    <value>Allow Pick From Library</value>
+  </data>
+  <data name="CameraFieldTake" xml:space="preserve">
+    <value>Take Photo</value>
+  </data>
+  <data name="CameraFieldPick" xml:space="preserve">
+    <value>Choose From Library</value>
+  </data>
+  <data name="CameraFieldClear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="CameraFieldProcessing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="CameraFieldError" xml:space="preserve">
+    <value>Could not get the photo: {0}</value>
+  </data>
 </root>

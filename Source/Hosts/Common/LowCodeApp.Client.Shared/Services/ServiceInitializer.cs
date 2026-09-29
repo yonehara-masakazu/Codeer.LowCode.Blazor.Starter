@@ -41,6 +41,8 @@ namespace LowCodeApp.Client.Shared.Services
             services.AddScoped<ILogger, Logger>();
             services.AddSingleton<LoadingService>();
             services.TryAddScoped<IHapticDevice, NullHapticDevice>();
+            services.TryAddScoped<ICameraService, NullCameraService>();
+            services.TryAddScoped<IDeviceLocation, NullDeviceLocation>();
             services.AddToaster(config =>
             {
                 config.PositionClass = Defaults.Classes.Position.BottomRight;

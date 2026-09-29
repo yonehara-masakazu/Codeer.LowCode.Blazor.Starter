@@ -1,0 +1,272 @@
+@using Codeer.LowCode.Blazor.Components
+@using Codeer.LowCode.Blazor.Components.Primitives
+@using Codeer.LowCode.Blazor.Repository.Data
+@using Codeer.LowCode.Blazor.Repository.Design
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using System.Globalization
+@using Microsoft.Extensions.DependencyInjection
+@using LowCodeApp.Client.Shared.Properties
+@using LowCodeApp.Client.Shared.Services
+@inherits FieldComponentBase<CameraField>
+@inject IJSRuntime JSRuntime
+@inject IServiceProvider Provider
+
+<div class="field-content camera-field @(Field.GetValidationClassName())">
+  @if (CanEdit)
+  {
+    <div class="camera-buttons">
+      <button type="button" class="btn btn-primary btn-sm" disabled="@_busy" @onclick="TakeAsync">@Resources.CameraFieldTake</button>
+      @if (Design.AllowPickFromLibrary)
+      {
+        <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@_busy" @onclick="PickAsync">@Resources.CameraFieldPick</button>
+      }
+      <button type="button" class="btn btn-outline-secondary btn-sm" disabled="@(_busy || !HasImage)" @onclick="ClearAsync">@Resources.CameraFieldClear</button>
+      @if (_busy)
+      {
+        <span class="text-muted small">@Resources.CameraFieldProcessing</span>
+      }
+    </div>
+    @if (!Camera.IsSupported)
+    {
+      <input type="file" accept="image/*" capture="environment" class="camera-hidden-input" hidden @ref="_cameraInput" />
+      <input type="file" accept="image/*" class="camera-hidden-input" hidden @ref="_libraryInput" />
+    }
+  }
+  @if (HasImage && _imageDataUrl != null)
+  {
+    <img src="@_imageDataUrl" alt="photo" class="camera-thumb" style="max-height:@(ThumbHeight);object-fit:@(ObjectFitCss)" />
+  }
+  @if (_error != null)
+  {
+    <div class="camera-error text-danger">@string.Format(Resources.CameraFieldError, _error)</div>
+  }
+</div>
+<ValidationFeedback IsValid="@Field.IsValid" ErrorMessage="@Field.ErrorText" />
+
+@code {
+  private ICameraService Camera => _camera ??= Provider.GetService<ICameraService>() ?? new NullCameraService();
+  private IDeviceLocation Location => _location ??= Provider.GetService<IDeviceLocation>() ?? new NullDeviceLocation();
+  private ICameraService? _camera;
+  private IDeviceLocation? _location;
+
+  private ElementReference _cameraInput;
+  private ElementReference _libraryInput;
+  private IJSObjectReference? _module;
+  private DotNetObjectReference<CameraFieldComponent>? _dotNetRef;
+  private bool _jsFailed;
+  private bool _busy;
+  private string? _error;
+  private string? _imageDataUrl;
+  private string? _loadedKey;
+  private Task<DeviceLocationResult?>? _pendingLocation; //Web: ボタン押下時に開始した位置取得
+
+  private CameraFieldDesign Design => Field.Design;
+  private bool CanEdit => Field.IsEnabled && !Field.IsViewOnly;
+  private bool HasImage => !string.IsNullOrEmpty(Field.FileName);
+  private string ThumbHeight => (Design.PreviewHeight ?? 200).ToString(CultureInfo.InvariantCulture) + "px";
+  private string ObjectFitCss => Design.ObjectFit.ToString().ToLowerInvariant() switch
+  {
+    "cover" => "cover",
+    "fill" => "fill",
+    "none" => "none",
+    "scaledown" => "scale-down",
+    _ => "contain",
+  };
+  private PhotoOptions Options => new()
+  {
+    MaxSize = Math.Max(1, Design.MaxImageSize),
+    JpegQuality = Math.Clamp(Design.JpegQuality, 1, 100),
+  };
+
+  //ファイル名は撮影ごとに変わるが、GUID とサイズも使ってレコード切り替えを確実に見分ける
+  private string? CurrentKey => Field.GetData() is FileFieldData d && !string.IsNullOrEmpty(d.FileName)
+    ? $"{d.FileGuid}|{d.FileSize}|{d.FileName}" : null;
+
+  protected override async Task OnParametersSetAsync()
+  {
+    await base.OnParametersSetAsync();
+    await LoadImageDataUrlAsync();
+  }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    await base.OnAfterRenderAsync(firstRender);
+    if (!CanEdit || Camera.IsSupported || _jsFailed) return;
+    if (_module == null) await InitJsAsync();
+    else
+    {
+      try { await _module.InvokeVoidAsync("setOptions", _cameraInput, Options.MaxSize, Options.JpegQuality); } catch { }
+    }
+  }
+
+  private async Task InitJsAsync()
+  {
+    //Designer プレビュー等、静的アセットの提供状況が不明な環境でもコンポーネント自体は落とさない
+    try
+    {
+      _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LowCodeApp.Client.Shared/camera.js");
+      _dotNetRef = DotNetObjectReference.Create(this);
+      await _module.InvokeVoidAsync("init", _cameraInput, _libraryInput, _dotNetRef);
+      await _module.InvokeVoidAsync("setOptions", _cameraInput, Options.MaxSize, Options.JpegQuality);
+    }
+    catch
+    {
+      _jsFailed = true;
+      _module = null;
+    }
+  }
+
+  private async Task LoadImageDataUrlAsync()
+  {
+    var key = CurrentKey;
+    if (key == null)
+    {
+      _imageDataUrl = null;
+      _loadedKey = null;
+      return;
+    }
+    if (_loadedKey == key && _imageDataUrl != null) return;
+
+    try
+    {
+      using var stream = await Field.GetMemoryStreamAsync();
+      if (stream == null)
+      {
+        _imageDataUrl = null;
+        return;
+      }
+      _imageDataUrl = "data:" + MimeOf(Field.FileName) + ";base64," + Convert.ToBase64String(stream.ToArray());
+      _loadedKey = key;
+    }
+    catch
+    {
+      _imageDataUrl = null;
+    }
+  }
+
+  private static string MimeOf(string? fileName) => Path.GetExtension(fileName ?? "").ToLowerInvariant() switch
+  {
+    ".png" => "image/png",
+    ".heic" => "image/heic",
+    ".heif" => "image/heif",
+    ".webp" => "image/webp",
+    _ => "image/jpeg",
+  };
+
+  private async Task TakeAsync()
+  {
+    _error = null;
+    //撮影ボタンを押した瞬間に位置取得を始め、撮影 UI を見ている間に済ませる
+    var locationTask = Location.GetAsync(TimeSpan.FromSeconds(10));
+    if (!Camera.IsSupported)
+    {
+      _pendingLocation = locationTask;
+      await OpenWebInputAsync(_cameraInput);
+      return;
+    }
+    await RunNativeAsync(capture: true, locationTask);
+  }
+
+  private async Task PickAsync()
+  {
+    _error = null;
+    if (!Camera.IsSupported)
+    {
+      await OpenWebInputAsync(_libraryInput);
+      return;
+    }
+    await RunNativeAsync(capture: false, null);
+  }
+
+  private async Task OpenWebInputAsync(ElementReference input)
+  {
+    if (_module == null) { _error = "camera.js"; return; }
+    try { await _module.InvokeVoidAsync("open", input); }
+    catch (Exception ex) { _error = ex.Message; }
+  }
+
+  private async Task RunNativeAsync(bool capture, Task<DeviceLocationResult?>? locationTask)
+  {
+    _busy = true;
+    try
+    {
+      var photo = capture ? await Camera.CaptureAsync(Options) : await Camera.PickAsync(Options);
+      if (photo == null) return; //キャンセル。位置は捨てる
+      var takenAt = DateTime.Now;
+      DeviceLocationResult? loc = null;
+      if (locationTask != null) { try { loc = await locationTask; } catch { } }
+      await ApplyAsync(photo, capture, loc, takenAt);
+    }
+    catch (Exception ex)
+    {
+      _error = ex.Message;
+    }
+    finally
+    {
+      _busy = false;
+      await InvokeAsync(StateHasChanged);
+    }
+  }
+
+  [JSInvokable]
+  public async Task OnWebFileReady(string base64Jpeg, bool captured)
+  {
+    _busy = true;
+    var locationTask = captured ? _pendingLocation : null;
+    _pendingLocation = null;
+    await InvokeAsync(StateHasChanged);
+    try
+    {
+      var takenAt = DateTime.Now;
+      DeviceLocationResult? loc = null;
+      if (locationTask != null) { try { loc = await locationTask; } catch { } }
+      var photo = new CapturedPhoto { Bytes = Convert.FromBase64String(base64Jpeg) };
+      await ApplyAsync(photo, captured, loc, takenAt);
+    }
+    catch (Exception ex)
+    {
+      _error = ex.Message;
+    }
+    finally
+    {
+      _busy = false;
+      await InvokeAsync(StateHasChanged);
+    }
+  }
+
+  [JSInvokable]
+  public async Task OnWebFileError(string message)
+  {
+    _pendingLocation = null;
+    _error = message;
+    await InvokeAsync(StateHasChanged);
+  }
+
+  private async Task ApplyAsync(CapturedPhoto photo, bool captured, DeviceLocationResult? loc, DateTime takenAt)
+  {
+    await Field.SetPhotoAsync(photo, captured, loc, takenAt);
+    _imageDataUrl = "data:" + photo.ContentType + ";base64," + Convert.ToBase64String(photo.Bytes);
+    _loadedKey = CurrentKey;
+  }
+
+  private async Task ClearAsync()
+  {
+    _error = null;
+    await Field.ClearFileAsync();
+    _imageDataUrl = null;
+    _loadedKey = null;
+  }
+
+  public override async ValueTask DisposeAsync()
+  {
+    if (_module != null)
+    {
+      try { await _module.InvokeVoidAsync("dispose", _cameraInput, _libraryInput); } catch { /* ignore */ }
+      try { await _module.DisposeAsync(); } catch { /* ignore */ }
+    }
+    _dotNetRef?.Dispose();
+
+    await base.DisposeAsync();
+  }
+}
