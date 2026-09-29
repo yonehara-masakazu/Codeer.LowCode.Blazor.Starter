@@ -56,4 +56,46 @@
   <data name="SignatureFieldClear" xml:space="preserve">
     <value>クリア</value>
   </data>
+  <data name="ScanInputField" xml:space="preserve">
+    <value>スキャン入力</value>
+  </data>
+  <data name="ScanInputFieldOnScanned" xml:space="preserve">
+    <value>スキャン時</value>
+  </data>
+  <data name="ScanInputFieldDuplicateMode" xml:space="preserve">
+    <value>重複時の動作</value>
+  </data>
+  <data name="ScanInputFieldUseHaptics" xml:space="preserve">
+    <value>振動を使う</value>
+  </data>
+  <data name="ScanInputFieldKeepFocus" xml:space="preserve">
+    <value>フォーカスを維持</value>
+  </data>
+  <data name="ScanInputFieldShowSoftKeyboard" xml:space="preserve">
+    <value>ソフトキーボードを表示</value>
+  </data>
+  <data name="ScanInputFieldPlaceholder" xml:space="preserve">
+    <value>プレースホルダ</value>
+  </data>
+  <data name="ScanInputPlaceholderDefault" xml:space="preserve">
+    <value>ここでスキャン</value>
+  </data>
+  <data name="ScanInputAccepted" xml:space="preserve">
+    <value>{0}（{1}件目）</value>
+  </data>
+  <data name="ScanInputDuplicate" xml:space="preserve">
+    <value>{0} 読み取り済み</value>
+  </data>
+  <data name="ScanInputRejected" xml:space="preserve">
+    <value>{0} 受け付けできません</value>
+  </data>
+  <data name="ScanDuplicateMode_Allow" xml:space="preserve">
+    <value>許可</value>
+  </data>
+  <data name="ScanDuplicateMode_Warn" xml:space="preserve">
+    <value>警告して許可</value>
+  </data>
+  <data name="ScanDuplicateMode_Ignore" xml:space="preserve">
+    <value>警告して無視</value>
+  </data>
 </root>

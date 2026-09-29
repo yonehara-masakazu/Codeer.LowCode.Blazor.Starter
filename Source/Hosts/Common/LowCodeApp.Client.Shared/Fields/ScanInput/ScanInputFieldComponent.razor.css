@@ -1,0 +1,9 @@
+.scan-input {
+    width: 100%;
+}
+
+.scan-input-result {
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    word-break: break-all;
+}

@@ -56,4 +56,46 @@
   <data name="SignatureFieldClear" xml:space="preserve">
     <value>Clear</value>
   </data>
+  <data name="ScanInputField" xml:space="preserve">
+    <value>Scan Input</value>
+  </data>
+  <data name="ScanInputFieldOnScanned" xml:space="preserve">
+    <value>OnScanned</value>
+  </data>
+  <data name="ScanInputFieldDuplicateMode" xml:space="preserve">
+    <value>Duplicate Mode</value>
+  </data>
+  <data name="ScanInputFieldUseHaptics" xml:space="preserve">
+    <value>Use Haptics</value>
+  </data>
+  <data name="ScanInputFieldKeepFocus" xml:space="preserve">
+    <value>Keep Focus</value>
+  </data>
+  <data name="ScanInputFieldShowSoftKeyboard" xml:space="preserve">
+    <value>Show Soft Keyboard</value>
+  </data>
+  <data name="ScanInputFieldPlaceholder" xml:space="preserve">
+    <value>Placeholder</value>
+  </data>
+  <data name="ScanInputPlaceholderDefault" xml:space="preserve">
+    <value>Scan here</value>
+  </data>
+  <data name="ScanInputAccepted" xml:space="preserve">
+    <value>{0} (#{1})</value>
+  </data>
+  <data name="ScanInputDuplicate" xml:space="preserve">
+    <value>{0} already scanned</value>
+  </data>
+  <data name="ScanInputRejected" xml:space="preserve">
+    <value>{0} rejected</value>
+  </data>
+  <data name="ScanDuplicateMode_Allow" xml:space="preserve">
+    <value>Allow</value>
+  </data>
+  <data name="ScanDuplicateMode_Warn" xml:space="preserve">
+    <value>Warn</value>
+  </data>
+  <data name="ScanDuplicateMode_Ignore" xml:space="preserve">
+    <value>Ignore</value>
+  </data>
 </root>

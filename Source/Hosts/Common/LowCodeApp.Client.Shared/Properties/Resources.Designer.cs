@@ -103,5 +103,131 @@ namespace LowCodeApp.Client.Shared.Properties {
                 return ResourceManager.GetString("SignatureFieldClear", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Scan Input に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputField {
+            get {
+                return ResourceManager.GetString("ScanInputField", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   OnScanned に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldOnScanned {
+            get {
+                return ResourceManager.GetString("ScanInputFieldOnScanned", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Duplicate Mode に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldDuplicateMode {
+            get {
+                return ResourceManager.GetString("ScanInputFieldDuplicateMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Use Haptics に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldUseHaptics {
+            get {
+                return ResourceManager.GetString("ScanInputFieldUseHaptics", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Keep Focus に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldKeepFocus {
+            get {
+                return ResourceManager.GetString("ScanInputFieldKeepFocus", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Show Soft Keyboard に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldShowSoftKeyboard {
+            get {
+                return ResourceManager.GetString("ScanInputFieldShowSoftKeyboard", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Placeholder に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputFieldPlaceholder {
+            get {
+                return ResourceManager.GetString("ScanInputFieldPlaceholder", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Scan here に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputPlaceholderDefault {
+            get {
+                return ResourceManager.GetString("ScanInputPlaceholderDefault", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   {0} (#{1}) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputAccepted {
+            get {
+                return ResourceManager.GetString("ScanInputAccepted", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   {0} already scanned に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputDuplicate {
+            get {
+                return ResourceManager.GetString("ScanInputDuplicate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   {0} rejected に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanInputRejected {
+            get {
+                return ResourceManager.GetString("ScanInputRejected", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Allow に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanDuplicateMode_Allow {
+            get {
+                return ResourceManager.GetString("ScanDuplicateMode_Allow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Warn に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanDuplicateMode_Warn {
+            get {
+                return ResourceManager.GetString("ScanDuplicateMode_Warn", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Ignore に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        internal static string ScanDuplicateMode_Ignore {
+            get {
+                return ResourceManager.GetString("ScanDuplicateMode_Ignore", resourceCulture);
+            }
+        }
     }
 }

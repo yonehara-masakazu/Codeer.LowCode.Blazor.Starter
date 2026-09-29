@@ -1,0 +1,105 @@
+@using Codeer.LowCode.Blazor.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using LowCodeApp.Client.Shared.Properties
+@inherits FieldComponentBase<ScanInputField>
+@inject IJSRuntime JSRuntime
+
+<div class="field-content scan-input">
+  <input type="text" @ref="Element" id="@WebElementId" class="form-control scan-input-box"
+         autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"
+         inputmode="@(Design.ShowSoftKeyboard ? null : "none")"
+         placeholder="@PlaceholderText"
+         disabled="@(!CanEdit)" />
+  @switch (_hiddenVersion == Field.ResultVersion ? ScanResultKind.None : Field.ResultKind)
+  {
+    case ScanResultKind.Accepted:
+      <div class="scan-input-result text-success">✓ @string.Format(Resources.ScanInputAccepted, Field.ResultCode, Field.Count)</div>
+      break;
+    case ScanResultKind.Duplicate:
+      <div class="scan-input-result text-warning">⚠ @string.Format(Resources.ScanInputDuplicate, Field.ResultCode)</div>
+      break;
+    case ScanResultKind.Rejected:
+      <div class="scan-input-result text-danger">✗ @(string.IsNullOrEmpty(Field.ErrorText) ? string.Format(Resources.ScanInputRejected, Field.ResultCode) : $"{Field.ResultCode} {Field.ErrorText}")</div>
+      break;
+  }
+</div>
+
+@code {
+  private IJSObjectReference? _module;
+  private DotNetObjectReference<ScanInputFieldComponent>? _dotNetRef;
+  private bool _jsFailed;
+  //成功の表示は数秒で消す。重複と拒否は次のスキャンまで残す (見返せるように)
+  private const int AcceptedDisplayMilliseconds = 2500;
+  private int _scheduledVersion = -1;
+  private int _hiddenVersion = -1;
+
+  private ScanInputFieldDesign Design => Field.Design;
+  private bool CanEdit => Field.IsEnabled && !Field.IsViewOnly;
+  private string PlaceholderText => string.IsNullOrEmpty(Design.Placeholder) ? Resources.ScanInputPlaceholderDefault : Design.Placeholder;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    await base.OnAfterRenderAsync(firstRender);
+    ScheduleHideAccepted();
+    if (_jsFailed) return;
+    if (_module == null)
+    {
+      await InitJsAsync();
+    }
+    else
+    {
+      try { await _module.InvokeVoidAsync("setOptions", Element, new { keepFocus = Design.KeepFocus && CanEdit }); } catch { }
+    }
+  }
+
+  private void ScheduleHideAccepted()
+  {
+    if (Field.ResultKind != ScanResultKind.Accepted) return;
+    var version = Field.ResultVersion;
+    if (_scheduledVersion == version) return;
+    _scheduledVersion = version;
+    _ = Task.Delay(AcceptedDisplayMilliseconds).ContinueWith(_ =>
+      //MAUI では UI スレッド外からの再描画で落ちることがあるので InvokeAsync を通す
+      InvokeAsync(() =>
+      {
+        if (Field.ResultVersion != version) return;
+        _hiddenVersion = version;
+        StateHasChanged();
+      }));
+  }
+
+  private async Task InitJsAsync()
+  {
+    //Designer プレビュー等で JS が読めなくても、素の input として表示されるだけにする
+    try
+    {
+      _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LowCodeApp.Client.Shared/scan-input.js");
+      _dotNetRef = DotNetObjectReference.Create(this);
+      await _module.InvokeVoidAsync("init", Element, _dotNetRef, new { keepFocus = Design.KeepFocus && CanEdit });
+    }
+    catch
+    {
+      _jsFailed = true;
+      _module = null;
+    }
+  }
+
+  [JSInvokable]
+  public async Task OnCode(string code)
+  {
+    if (!CanEdit) return;
+    await Field.EnqueueAsync(code);
+  }
+
+  public override async ValueTask DisposeAsync()
+  {
+    if (_module != null)
+    {
+      try { await _module.InvokeVoidAsync("dispose", Element); } catch { /* ignore */ }
+      try { await _module.DisposeAsync(); } catch { /* ignore */ }
+    }
+    _dotNetRef?.Dispose();
+    await base.DisposeAsync();
+  }
+}
